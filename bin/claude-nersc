@@ -90,6 +90,7 @@ trap cleanup EXIT
 
 echo "Starting Squid proxy..."
 podman-hpc run -d --rm --name "$PROXY_NAME" \
+    --network=host \
     "$IMAGE_PROXY" \
     squid -N -f /etc/squid/squid.conf
 
