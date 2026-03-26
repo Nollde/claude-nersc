@@ -19,11 +19,11 @@ Squid proxy via `http_proxy`/`https_proxy` environment variables.
 
 ```
 ┌─────────────────────────────┐     ┌──────────────────────┐
-│  claude-nersc (agent)       │     │  claude-nersc-proxy   │
-│                             │     │                       │
+│  claude-nersc (agent)       │     │  claude-nersc-proxy  │
+│                             │     │                      │
 │  Claude Code ──► http_proxy ──────►  Squid ──► internet  │
-│                             │     │  (whitelist only)     │
-│  /workspace (your code)     │     │                       │
+│                             │     │  (whitelist only)    │
+│  /workspace (your code)     │     │                      │
 └─────────────────────────────┘     └──────────────────────┘
 ```
 
