@@ -111,7 +111,7 @@ done
 echo "Launching Claude agent (workspace: $WORKSPACE)..."
 echo "───────────────────────────────────────────────────"
 
-podman-hpc run -it --rm \
+podman-hpc run -it --rm --gpu \
     --user root \
     --network=host \
     -e SQUID_PROXY=127.0.0.1:3128 \
