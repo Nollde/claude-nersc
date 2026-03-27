@@ -59,8 +59,28 @@ fi
 
 WORKSPACE="$(cd "$WORKSPACE" && pwd)"
 
-# ─── If not in a Slurm allocation, request one and re-exec ──────────────────
+# ─── Pin Podman version ─────────────────────────────────────────────────────
+# Workaround: the Dec 2024 Podman update on Perlmutter breaks --userns=keep-id
+# (especially with --gpu). Pin to the older Podman until NERSC resolves this.
+# docs: https://docs.nersc.gov/development/containers/podman-hpc/overview/#known-issues
+PODMAN_OLD=/global/common/shared/das/podman-4.7.0/bin/podman
+if [ -x "$PODMAN_OLD" ]; then
+    export PODMANHPC_PODMAN_BIN="$PODMAN_OLD"
+    echo "Using pinned Podman: $PODMAN_OLD"
+else
+    echo "WARNING: Pinned Podman not found at $PODMAN_OLD, using system default"
+fi
+
+# ─── If not in a Slurm allocation, pre-pull images and request one ──────────
 if [ -z "${SLURM_JOB_ID:-}" ]; then
+    # Pre-pull images on the login node (shared filesystem makes them
+    # available on compute nodes). 
+    # (Pulling from compute nodes can lead to errors)
+    echo "Pre-pulling images on login node..."
+    podman-hpc pull "$IMAGE_PROXY"
+    podman-hpc pull "$IMAGE_AGENT"
+    echo "Images ready."
+
     SALLOC_ARGS=(
         --nodes 1
         --qos interactive
@@ -68,7 +88,9 @@ if [ -z "${SLURM_JOB_ID:-}" ]; then
         --constraint "$CONSTRAINT"
         --account "$ACCOUNT"
     )
-    [ -n "$GPUS" ] && SALLOC_ARGS+=(--gpus "$GPUS")
+    if [ -n "$GPUS" ]; then
+        SALLOC_ARGS+=(--gpus "$GPUS")
+    fi
 
     echo "Requesting compute node: ${SALLOC_ARGS[*]}"
     exec salloc "${SALLOC_ARGS[@]}" \
@@ -81,29 +103,34 @@ fi
 
 # ─── We have an allocation — start containers ───────────────────────────────
 PROXY_NAME="claude-nersc-proxy-$$"
+COMPUTE_NODE=$(scontrol show hostnames "$SLURM_NODELIST" | head -n1)
+echo "Compute node: $COMPUTE_NODE"
 
+PROXY_PID=""
 cleanup() {
     echo "Cleaning up..."
-    podman-hpc stop "$PROXY_NAME" 2>/dev/null || true
+    [ -n "$PROXY_PID" ] && kill "$PROXY_PID" 2>/dev/null || true
+    wait "$PROXY_PID" 2>/dev/null || true
 }
 trap cleanup EXIT
 
-echo "Starting Squid proxy..."
-podman-hpc run -d --rm --name "$PROXY_NAME" \
+echo "Starting Squid proxy on $COMPUTE_NODE..."
+srun --overlap --ntasks=1 --gpus=0 --export=ALL \
+    podman-hpc run --rm --name "$PROXY_NAME" \
     --network=host \
     "$IMAGE_PROXY" \
-    squid -N -f /etc/squid/squid.conf
+    squid -N -f /etc/squid/squid.conf > /dev/null 2>&1 &
+PROXY_PID=$!
 
 # Wait for Squid to be ready (up to 15s)
 echo "Waiting for Squid proxy..."
 for i in $(seq 1 30); do
-    if podman-hpc ps --format '{{.Names}}' | grep -q "$PROXY_NAME"; then
+    if srun --overlap --ntasks=1 --gpus=0 --export=ALL podman-hpc ps --format '{{.Names}}' | grep -q "$PROXY_NAME"; then
         echo "Squid proxy ready."
         break
     fi
     if [ "$i" -eq 30 ]; then
         echo "ERROR: Squid proxy failed to start within 15s"
-        podman-hpc logs "$PROXY_NAME" 2>/dev/null || true
         exit 1
     fi
     sleep 0.5
@@ -111,12 +138,14 @@ done
 echo "Launching Claude agent (workspace: $WORKSPACE)..."
 echo "───────────────────────────────────────────────────"
 
-podman-hpc run -it --rm \
+srun --overlap --ntasks=1 ${GPUS:+--gpus=$GPUS --gpu-bind=none} --export=ALL --pty \
+    podman-hpc run -it --rm \
     --network=host \
     ${GPUS:+--gpu} \
     --userns=keep-id:uid=1000,gid=1000 \
     -e SQUID_PROXY=127.0.0.1:3128 \
     -v "$WORKSPACE":/workspace \
-    "$IMAGE_AGENT"
+    "$IMAGE_AGENT" \
+    || true
 
 echo "Session ended."
