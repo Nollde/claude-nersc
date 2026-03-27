@@ -122,15 +122,19 @@ srun --overlap --ntasks=1 --gpus=0 --export=ALL \
     squid -N -f /etc/squid/squid.conf > /dev/null 2>&1 &
 PROXY_PID=$!
 
-# Give Squid a moment to start up
+# Wait for Squid to be ready (up to 15s)
 echo "Waiting for Squid proxy..."
-sleep 3
-if kill -0 "$PROXY_PID" 2>/dev/null; then
-    echo "Squid proxy running (PID $PROXY_PID)."
-else
-    echo "ERROR: Squid proxy failed to start"
-    exit 1
-fi
+for i in $(seq 1 30); do
+    if srun --overlap --ntasks=1 --gpus=0 --export=ALL podman-hpc ps --format '{{.Names}}' 2>/dev/null | grep -q "$PROXY_NAME"; then
+        echo "Squid proxy ready."
+        break
+    fi
+    if [ "$i" -eq 30 ]; then
+        echo "ERROR: Squid proxy failed to start within 15s"
+        exit 1
+    fi
+    sleep 0.5
+done
 echo "Launching Claude agent (workspace: $WORKSPACE)..."
 echo "───────────────────────────────────────────────────"
 
