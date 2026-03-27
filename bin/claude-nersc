@@ -125,7 +125,7 @@ PROXY_PID=$!
 # Wait for Squid to be ready (up to 15s)
 echo "Waiting for Squid proxy..."
 for i in $(seq 1 30); do
-    if srun --overlap --ntasks=1 --gpus=0 --export=ALL podman-hpc ps --format '{{.Names}}' 2>/dev/null | grep -q "$PROXY_NAME"; then
+    if srun --overlap --ntasks=1 --gpus=0 --export=ALL podman-hpc ps --format '{{.Names}}' | grep -q "$PROXY_NAME"; then
         echo "Squid proxy ready."
         break
     fi
