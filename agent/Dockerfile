@@ -6,9 +6,7 @@ ENV TZ="$TZ"
 # Create researcher user (used in local Docker mode)
 ARG USERNAME=researcher
 RUN useradd -m -s /bin/bash $USERNAME && \
-    mkdir -p /etc/sudoers.d && \
-    echo "$USERNAME ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME && \
-    chmod 0440 /etc/sudoers.d/$USERNAME
+    mkdir -p /etc/sudoers.d
 
 # System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \

@@ -33,8 +33,8 @@ Squid proxy via `http_proxy`/`https_proxy` environment variables.
 |-------|-------------|------------------------|
 | Network | iptables firewall (kernel-level) | Squid proxy (application-level) |
 | Filesystem | Container isolation | Container isolation (only mounted volumes visible) |
-| User | `researcher` (non-root) | Rootless Podman with user namespaces (`root` inside = unprivileged outside) |
-| Proxy bypass | Not possible (iptables) | `readonly` env vars prevent `unset`; Claude Code respects proxy settings |
+| User | `researcher` (non-root, no sudo) | `researcher` (UID 1000) via `--userns=keep-id` — unprivileged inside and outside |
+| Firewall tampering | Not possible — `researcher` cannot modify iptables (no `NET_ADMIN` capability, no sudo) | `readonly` env vars prevent `unset`; Claude Code respects proxy settings |
 
 ## Quick start
 
