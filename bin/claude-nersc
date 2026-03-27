@@ -124,7 +124,7 @@ srun --overlap --ntasks=1 --gpus=0 --export=ALL \
     podman-hpc run --rm --name "$PROXY_NAME" \
     --network=host \
     "$IMAGE_PROXY" \
-    squid -N -f /etc/squid/squid.conf &
+    squid -N -f /etc/squid/squid.conf > /dev/null 2>&1 &
 PROXY_PID=$!
 
 # Give Squid a moment to start up
