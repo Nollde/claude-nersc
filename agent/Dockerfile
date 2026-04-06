@@ -33,10 +33,10 @@ RUN curl -fsSL https://claude.ai/install.sh | bash && \
     chmod 755 /usr/local/bin/claude
 
 # Shell configuration — loaded for all users (root, researcher, or mapped HPC user)
-COPY agent/profile.d/claude-nersc.sh /etc/profile.d/claude-nersc.sh
+COPY agent/profile.d/claude-hpc.sh /etc/profile.d/claude-hpc.sh
 
 # Domain whitelist (single source of truth for iptables + Squid)
-COPY shared/allowed-domains.conf /etc/claude-nersc/allowed-domains.conf
+COPY shared/allowed-domains.conf /etc/claude-hpc/allowed-domains.conf
 
 # Firewall + entrypoint
 COPY agent/init-firewall.sh agent/entrypoint.sh /usr/local/bin/

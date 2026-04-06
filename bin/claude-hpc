@@ -7,16 +7,16 @@ TIME="1:00:00"
 CONSTRAINT="cpu"
 GPUS=""
 WORKSPACE="$(pwd)"
-IMAGE_AGENT="docker.io/nollde24/claude-nersc:latest"
-IMAGE_PROXY="docker.io/nollde24/claude-nersc-proxy:latest"
+IMAGE_AGENT="docker.io/nollde24/claude-hpc:latest"
+IMAGE_PROXY="docker.io/nollde24/claude-hpc-proxy:latest"
 
 # ─── Usage ───────────────────────────────────────────────────────────────────
 usage() {
     cat << 'EOF'
-claude-nersc — Launch Claude Code in a sandboxed container on NERSC Perlmutter
+claude-hpc — Launch Claude Code in a sandboxed container on NERSC Perlmutter
 
 Usage:
-  claude-nersc -A <account> [options]
+  claude-hpc -A <account> [options]
 
 Options:
   -A, --account ACCOUNT   NERSC account/project (required)
@@ -29,9 +29,9 @@ Options:
   -h, --help              Show this help
 
 Examples:
-  claude-nersc -A m3246
-  claude-nersc -A m3246 -t 2:00:00 -C gpu -g 1
-  claude-nersc -A m3246 -w ~/my-project
+  claude-hpc -A m3246
+  claude-hpc -A m3246 -t 2:00:00 -C gpu -g 1
+  claude-hpc -A m3246 -w ~/my-project
 EOF
     exit 0
 }
@@ -102,7 +102,7 @@ if [ -z "${SLURM_JOB_ID:-}" ]; then
 fi
 
 # ─── We have an allocation — start containers ───────────────────────────────
-PROXY_NAME="claude-nersc-proxy-$$"
+PROXY_NAME="claude-hpc-proxy-$$"
 COMPUTE_NODE=$(scontrol show hostnames "$SLURM_NODELIST" | head -n1)
 echo "Compute node: $COMPUTE_NODE"
 

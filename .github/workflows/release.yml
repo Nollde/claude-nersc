@@ -32,8 +32,8 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            nollde24/claude-nersc:latest
-            nollde24/claude-nersc:${{ steps.version.outputs.VERSION }}
+            nollde24/claude-hpc:latest
+            nollde24/claude-hpc:${{ steps.version.outputs.VERSION }}
 
       - name: Build and push proxy image
         uses: docker/build-push-action@v7
@@ -43,5 +43,5 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            nollde24/claude-nersc-proxy:latest
-            nollde24/claude-nersc-proxy:${{ steps.version.outputs.VERSION }}
+            nollde24/claude-hpc-proxy:latest
+            nollde24/claude-hpc-proxy:${{ steps.version.outputs.VERSION }}

@@ -1,5 +1,5 @@
 {
-  "name": "Claude NERSC (local)",
+  "name": "Claude HPC (local)",
   "build": {
     "dockerfile": "../agent/Dockerfile",
     "context": "..",
@@ -36,7 +36,7 @@
     "CLAUDE_CONFIG_DIR": "/home/researcher/.claude"
   },
   "mounts": [
-    "source=claude-nersc-config-${devcontainerId},target=/home/researcher/.claude,type=volume"
+    "source=claude-hpc-config-${devcontainerId},target=/home/researcher/.claude,type=volume"
   ],
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=delegated",
   "workspaceFolder": "/workspace",

@@ -1,4 +1,4 @@
-# Claude NERSC
+# Claude HPC
 
 Sandboxed [Claude Code](https://docs.anthropic.com/en/docs/claude-code) environment for
 NERSC Perlmutter and local Docker. Network-restricted via domain whitelist — only approved
@@ -10,8 +10,8 @@ Two containers run side by side:
 
 | Container | Purpose |
 |-----------|---------|
-| **claude-nersc** | Claude Code + conda + dev tools (git, gh, fzf, delta, vim, nano) |
-| **claude-nersc-proxy** | Squid forward proxy with domain whitelist |
+| **claude-hpc** | Claude Code + conda + dev tools (git, gh, fzf, delta, vim, nano) |
+| **claude-hpc-proxy** | Squid forward proxy with domain whitelist |
 
 On **local Docker**, the agent container uses iptables for network restriction (no proxy needed).
 On **Perlmutter**, iptables is unavailable (rootless Podman), so traffic is routed through the
@@ -19,7 +19,7 @@ Squid proxy via `http_proxy`/`https_proxy` environment variables.
 
 ```
 ┌─────────────────────────────┐     ┌──────────────────────┐
-│  claude-nersc (agent)       │     │  claude-nersc-proxy  │
+│  claude-hpc (agent)       │     │  claude-hpc-proxy  │
 │                             │     │                      │
 │  Claude Code ──► http_proxy ──────►  Squid ──► internet  │
 │                             │     │  (whitelist only)    │
@@ -41,7 +41,7 @@ Squid proxy via `http_proxy`/`https_proxy` environment variables.
 ### Perlmutter (one command)
 
 ```bash
-claude-nersc -A <your_account>
+claude-hpc -A <your_account>
 ```
 
 This allocates a compute node, starts the proxy, and drops you into the agent container
@@ -53,7 +53,7 @@ with Claude Code ready to use.
 docker run -it --rm \
   --cap-add=NET_ADMIN --cap-add=NET_RAW \
   -v $(pwd):/workspace \
-  nollde24/claude-nersc:latest
+  nollde24/claude-hpc:latest
 ```
 
 ## Installation
@@ -64,16 +64,16 @@ docker run -it --rm \
 
 ```bash
 mkdir -p ~/.local/bin
-curl -fsSL https://raw.githubusercontent.com/Nollde/claude-nersc/main/bin/claude-nersc \
-  -o ~/.local/bin/claude-nersc
-chmod +x ~/.local/bin/claude-nersc
+curl -fsSL https://raw.githubusercontent.com/Nollde/claude-hpc/main/bin/claude-hpc \
+  -o ~/.local/bin/claude-hpc
+chmod +x ~/.local/bin/claude-hpc
 ```
 
 **2. Pull the images** (one-time, repeat after new releases):
 
 ```bash
-podman-hpc pull docker.io/nollde24/claude-nersc:latest
-podman-hpc pull docker.io/nollde24/claude-nersc-proxy:latest
+podman-hpc pull docker.io/nollde24/claude-hpc:latest
+podman-hpc pull docker.io/nollde24/claude-hpc-proxy:latest
 ```
 
 **3. Set up Claude Code** (one-time per workspace):
@@ -86,13 +86,13 @@ restarts — but is specific to each workspace.
 **4. Launch**:
 
 ```bash
-claude-nersc -A m3246
+claude-hpc -A m3246
 ```
 
 #### Launcher options
 
 ```
-claude-nersc -A <account> [options]
+claude-hpc -A <account> [options]
 
   -A, --account ACCOUNT   NERSC account/project (required)
   -t, --time TIME         Time limit (default: 1:00:00)
@@ -107,19 +107,19 @@ claude-nersc -A <account> [options]
 
 ```bash
 # Basic CPU session
-claude-nersc -A m3246
+claude-hpc -A m3246
 
 # 2-hour GPU session
-claude-nersc -A m3246 -t 2:00:00 -g 1
+claude-hpc -A m3246 -t 2:00:00 -g 1
 
 # Mount a specific project
-claude-nersc -A m3246 -w ~/my-project
+claude-hpc -A m3246 -w ~/my-project
 ```
 
 ### Local Docker
 
 ```bash
-docker pull nollde24/claude-nersc:latest
+docker pull nollde24/claude-hpc:latest
 ```
 
 Or use the VS Code Dev Container (see below).
@@ -129,7 +129,7 @@ Or use the VS Code Dev Container (see below).
 Build project-specific images on top of the agent:
 
 ```dockerfile
-FROM nollde24/claude-nersc:latest
+FROM nollde24/claude-hpc:latest
 
 # Project dependencies
 COPY environment.yml /tmp/environment.yml
@@ -143,7 +143,7 @@ On Perlmutter, build and use your custom image:
 
 ```bash
 podman-hpc build -t my-project:latest .
-claude-nersc -A m3246 --agent-image my-project:latest
+claude-hpc -A m3246 --agent-image my-project:latest
 ```
 
 ## VS Code integration
@@ -158,10 +158,10 @@ is set up automatically.
 ### Perlmutter (Remote attach)
 
 1. Connect to Perlmutter via **Remote-SSH** in VS Code
-2. Start a session: `claude-nersc -A m3246`
+2. Start a session: `claude-hpc -A m3246`
 3. In a second terminal, find the container: `podman-hpc ps`
 4. In VS Code, open the command palette and select **Dev Containers: Attach to Running Container**
-5. Select the `claude-nersc` container
+5. Select the `claude-hpc` container
 
 ## Domain whitelist
 
@@ -190,8 +190,8 @@ git push origin v1.0.0
 ```
 
 This triggers GitHub Actions to build `linux/amd64` images and push:
-- `nollde24/claude-nersc:latest` + `nollde24/claude-nersc:<version>`
-- `nollde24/claude-nersc-proxy:latest` + `nollde24/claude-nersc-proxy:<version>`
+- `nollde24/claude-hpc:latest` + `nollde24/claude-hpc:<version>`
+- `nollde24/claude-hpc-proxy:latest` + `nollde24/claude-hpc-proxy:<version>`
 
 ### Setup (one-time)
 
@@ -203,12 +203,12 @@ Add these secrets to your GitHub repository:
 
 ```bash
 # Agent (context = repo root)
-docker build --platform linux/amd64 -t nollde24/claude-nersc:latest -f agent/Dockerfile .
-docker push nollde24/claude-nersc:latest
+docker build --platform linux/amd64 -t nollde24/claude-hpc:latest -f agent/Dockerfile .
+docker push nollde24/claude-hpc:latest
 
 # Proxy (context = repo root)
-docker build --platform linux/amd64 -t nollde24/claude-nersc-proxy:latest -f proxy/Dockerfile .
-docker push nollde24/claude-nersc-proxy:latest
+docker build --platform linux/amd64 -t nollde24/claude-hpc-proxy:latest -f proxy/Dockerfile .
+docker push nollde24/claude-hpc-proxy:latest
 ```
 
 ## License

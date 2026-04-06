@@ -2,7 +2,7 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-DOMAINS_FILE="/etc/claude-nersc/allowed-domains.conf"
+DOMAINS_FILE="/etc/claude-hpc/allowed-domains.conf"
 
 # 1. Extract Docker DNS info BEFORE any flushing
 DOCKER_DNS_RULES=$(iptables-save -t nat | grep "127\.0\.0\.11" || true)
