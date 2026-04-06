@@ -48,6 +48,11 @@ RUN chmod +x /usr/local/bin/init-firewall.sh /usr/local/bin/entrypoint.sh && \
 RUN mkdir -p /workspace && chown $USERNAME:$USERNAME /workspace && chmod 755 /workspace
 WORKDIR /workspace
 
+# Persist Claude config across container restarts via workspace volume.
+# Symlinks are created at shell start to support potentially missing ENTRYPOINT machinery.
+RUN echo '[ -d /workspace ] && mkdir -p /workspace/._claude && ln -sfn /workspace/._claude "$HOME/.claude" && ln -sfn /workspace/._claude.json "$HOME/.claude.json"' \
+    >> /home/$USERNAME/.bashrc
+
 # Default to researcher for local Docker; podman-hpc overrides with --user root
 USER $USERNAME
 
