@@ -86,7 +86,7 @@ restarts — but is specific to each workspace.
 **4. Launch**:
 
 ```bash
-claude-hpc -A YOUR_SLURM_PROJECT_ID
+claude-hpc -A <your_account>
 ```
 
 #### Launcher options
@@ -107,13 +107,13 @@ claude-hpc -A <account> [options]
 
 ```bash
 # Basic CPU session
-claude-hpc -A m3246
+claude-hpc -A <your_account>
 
 # 2-hour GPU session
-claude-hpc -A m3246 -t 2:00:00 -g 1
+claude-hpc -A <your_account> -t 2:00:00 -g 1
 
 # Mount a specific project
-claude-hpc -A m3246 -w ~/my-project
+claude-hpc -A <your_account> -w ~/my-project
 ```
 
 ### Local Docker
@@ -143,7 +143,7 @@ On Perlmutter, build and use your custom image:
 
 ```bash
 podman-hpc build -t my-project:latest .
-claude-hpc -A m3246 --agent-image my-project:latest
+claude-hpc -A <your_account> --agent-image my-project:latest
 ```
 
 ## VS Code integration
@@ -158,7 +158,7 @@ is set up automatically.
 ### Perlmutter (Remote attach)
 
 1. Connect to Perlmutter via **Remote-SSH** in VS Code
-2. Start a session: `claude-hpc -A m3246`
+2. Start a session: `claude-hpc -A <your_account>`
 3. In a second terminal, find the container: `podman-hpc ps`
 4. In VS Code, open the command palette and select **Dev Containers: Attach to Running Container**
 5. Select the `claude-hpc` container
