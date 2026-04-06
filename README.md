@@ -19,7 +19,7 @@ Squid proxy via `http_proxy`/`https_proxy` environment variables.
 
 ```
 ┌─────────────────────────────┐     ┌──────────────────────┐
-│  claude-hpc (agent)       │     │  claude-hpc-proxy  │
+│  claude-hpc (agent)         │     │  claude-hpc-proxy    │
 │                             │     │                      │
 │  Claude Code ──► http_proxy ──────►  Squid ──► internet  │
 │                             │     │  (whitelist only)    │
