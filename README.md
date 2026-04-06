@@ -76,10 +76,12 @@ podman-hpc pull docker.io/nollde24/claude-nersc:latest
 podman-hpc pull docker.io/nollde24/claude-nersc-proxy:latest
 ```
 
-**3. Set up Claude Code** (one-time):
+**3. Set up Claude Code** (one-time per workspace):
 
 You need an Anthropic API key or Claude Code subscription. On first run, `claude` will
-prompt you to authenticate.
+prompt you to authenticate. Your Claude configuration (`._claude/` and `._claude.json`)
+is automatically persisted in the mounted workspace directory, so it survives container
+restarts — but is specific to each workspace.
 
 **4. Launch**:
 
