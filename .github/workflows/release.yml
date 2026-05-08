@@ -13,6 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - uses: docker/setup-qemu-action@v4
+
       - uses: docker/setup-buildx-action@v4
 
       - uses: docker/login-action@v4
@@ -30,7 +32,7 @@ jobs:
           context: .
           file: ./agent/Dockerfile
           push: true
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           tags: |
             nollde24/claude-hpc:latest
             nollde24/claude-hpc:${{ steps.version.outputs.VERSION }}
@@ -41,7 +43,7 @@ jobs:
           context: .
           file: ./proxy/Dockerfile
           push: true
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           tags: |
             nollde24/claude-hpc-proxy:latest
             nollde24/claude-hpc-proxy:${{ steps.version.outputs.VERSION }}
